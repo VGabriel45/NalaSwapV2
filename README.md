@@ -14,6 +14,8 @@ a cute black cat.
 P.S: The main focus for this project is around the smart contracts, testing and integration with the frontend, I will not put much effort into frontend 
 design.
 
+Here are some images of the unfinished app.
+
 ------------------------------------------------------------------------------------------------------------------
 ![alt text](https://gateway.pinata.cloud/ipfs/QmaxihcnLKMjD8E5Xo7AcKKhzpTZLuu3QoEeR27WvjJ3dy/nlaConnectWallet.png)
 ------------------------------------------------------------------------------------------------------------------
