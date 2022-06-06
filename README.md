@@ -14,7 +14,7 @@ a cute black cat.
 P.S: The main focus for this project is around the smart contracts, testing and integration with the frontend, I will not put much effort into frontend 
 design.
 
-![alt text]([http://url/to/img.png](https://ipfs.io/ipfs/QmQEA3aR8CbpCywXsXtYveWk4K6D5hYB355VR78MTUF9TH?filename=Screenshot%202022-06-05%20at%2015.37.07.png))
+![alt text](https://gateway.pinata.cloud/ipfs/QmcEfnhCfPn5SFA9PQ6YRELsTrDRSkapYiHwEAifuWtNQp/1.png)
 
 
 
