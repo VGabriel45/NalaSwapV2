@@ -13,6 +13,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { formatUnits } from '@ethersproject/units';
 import CircularProgress from '@mui/material/CircularProgress';
 import contractAddresses from "../utils/contractsAddresses.json";
+import {Dropdown} from "web3uikit";
 
 export default function HomePage () {
 
@@ -111,9 +112,15 @@ export default function HomePage () {
         }
     }
 
-    const switchTokenOrder = () => {
+    const switchTokenOrder = async () => {
         setTokenIn(tokenOut);
         setTokenOut(tokenIn);
+        setTokenInBalance(await getTokenBalance(tokenOut.address));
+        setTokenOutBalance(await getTokenBalance(tokenIn.address));
+        const amountInCopy = amountIn;
+        const amountOutCopy = amountOut;
+        setAmountIn(amountOutCopy);
+        setAmountOut(amountInCopy);
     }
 
     const getTokenBalance = async (tokenAddress) => {
@@ -121,9 +128,57 @@ export default function HomePage () {
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             const signer = provider.getSigner();
             if (signer) {
-                const tokenInContract = new ethers.Contract(tokenAddress, ["function balanceOf(address) public view returns (uint256)"], signer);
+                const tokenInContract = new ethers.Contract(tokenAddress, ["function balanceOf(address tokenOwner) public view returns (uint balance)"], signer);
                 const balance = await tokenInContract.balanceOf(signer.getAddress());
-                return formatUnits(BigNumber.from(balance.toString(), 18));
+                return balance;
+            }
+        }
+    }
+
+    const setAmountsToken1 = async (amount) => {
+        if(amount === "") {
+            setAmountIn("");
+            setAmountOut("");
+        }
+        if(parseInt(amount) === 0) {
+            setAmountIn(0);
+            setAmountOut(0);
+        } else if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const pancakeRouterV2 = new ethers.Contract("0x10ED43C718714eb63d5aA57B78B54704E256024E", ["function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)"], signer);
+                setAmountIn(amount);
+                const tokenOutAmount = await pancakeRouterV2
+                    .getAmountsOut(
+                        ethers.utils.parseEther(amount.toString()), 
+                        [tokenIn.address, tokenOut.address]
+                    )
+                setAmountOut(tokenOutAmount[1] / Math.pow(10, 18));
+            }
+        }
+    }
+
+    const setAmountsToken2 = async (amount) => {
+        if(amount === "") {
+            setAmountIn("");
+            setAmountOut("");
+        }
+        if(parseInt(amount) === 0) {
+            setAmountIn(0);
+            setAmountOut(0);
+        } else if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const pancakeRouterV2 = new ethers.Contract("0x10ED43C718714eb63d5aA57B78B54704E256024E", ["function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)"], signer);
+                setAmountOut(amount);
+                const tokenOutAmount = await pancakeRouterV2
+                    .getAmountsOut(
+                        ethers.utils.parseEther(amount.toString()), 
+                        [tokenOut.address, tokenIn.address]
+                    )
+                setAmountIn(tokenOutAmount[1] / Math.pow(10, 18));
             }
         }
     }
@@ -137,21 +192,21 @@ export default function HomePage () {
                 }}
                 noValidate
                 autoComplete="off"
-                style={{borderRadius:"10px", border:"2px solid #502199", marginBottom:"5%"}}
+                style={{borderRadius:"15px", border:"4px solid #502199", marginBottom:"5%", padding: "15px"}}
                 >
                 <Autocomplete
                     disablePortal
                     id="selectBox1"
                     options={tokens.filter(token => token.address !== tokenOut.address)}
                     sx={{ width: 300 }}
-                    renderInput={(params) => <TextField {...params} label={`Balance: ${tokenInBalance}`} /> }
+                    renderInput={(params) => <TextField {...params} label={`Balance: ${tokenInBalance / Math.pow(10, 18)}`} /> }
                     style={{border:"1px solid #502199", borderRadius: "10px"}}
                     value={tokenIn.label ? tokenIn.label : "BNB"}
-                    onChange={(event, newValue) => {
+                    onChange={async (event, newValue) => {
                         if(newValue.address !== tokenOut.address) {
                             setTokenIn(newValue);
-                            setTokenInBalance(getTokenBalance(newValue.address));
-                            console.log(tokenInBalance);
+                            setTokenInBalance(await getTokenBalance(newValue.address));
+                            // console.log(tokenInBalance);
                         } 
                     }}
                 />
@@ -169,20 +224,7 @@ export default function HomePage () {
                         ),
                       }}
                     onChange={async (e) => {
-                        if (typeof window.ethereum !== 'undefined') {
-                            const provider = new ethers.providers.Web3Provider(window.ethereum)
-                            const signer = provider.getSigner();
-                            if (signer) {
-                                const tokenInContract = new ethers.Contract("0x10ED43C718714eb63d5aA57B78B54704E256024E", ["function getAmountsOut(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts)"], signer);
-                                setAmountIn(e.target.value);
-                                    const tokenOutAmount = await tokenInContract
-                                        .getAmountsOut(
-                                            ethers.utils.parseEther(amountIn.toString()), 
-                                            [tokenIn.address, tokenOut.address]
-                                        )
-                                    setAmountOut(formatUnits(BigNumber.from(tokenOutAmount[1].toString(), 18)))
-                            }
-                        }
+                        setAmountsToken1(e.target.value)
                     }}
                 />
                 <div>
@@ -195,14 +237,13 @@ export default function HomePage () {
                     id="selectBox2"
                     options={tokens.filter(token => token.address !== tokenIn.address)}
                     sx={{ width: "80%" }}
-                    renderInput={(params) => <TextField {...params} label={`Balance: ${tokenOutBalance}`} />}
+                    renderInput={(params) => <TextField {...params} label={`Balance: ${tokenOutBalance / Math.pow(10, 18)}`} />}
                     style={{border:"1px solid #502199", borderRadius: "10px"}}
                     value={tokenOut.label ? tokenOut.label : "BANANA"}
-                    onChange={(event, newValue) => {
+                    onChange={async (event, newValue) => {
                         if(newValue.address !== tokenIn.address) {
                             setTokenOut(newValue);
-                            setTokenOutBalance(getTokenBalance(newValue.address));
-                            console.log(tokenOutBalance);
+                            setTokenOutBalance(await getTokenBalance(newValue.address));
                         } 
                     }}
                 />
@@ -219,9 +260,8 @@ export default function HomePage () {
                           </InputAdornment>
                         ),
                       }}
-                    onChange={(e, newValue) => {
-                        console.log(e.target.value);
-                        setAmountOut(e.target.value);
+                    onChange={(e) => {
+                        setAmountsToken2(e.target.value)
                     }}
                 />
             </Box>

@@ -4,25 +4,79 @@ import NalaRouterABI from "../ABIS/NalaRouter.json";
 import contractAddresses from "../utils/contractsAddresses.json";
 import {tokens} from "../utils/availableTokens";
 import nalaRouterABI from "../ABIS/NalaRouter.json";
+import pancakeFactoryABI from "../ABIS/PancakeFactory.json";
+import lpTokenABI from "../ABIS/LPTokenABI.json";
 import nalaTokenABI from "../ABIS/NalaTokenABI.json";
 import { BigNumber, ethers } from 'ethers';
 import {Widget} from "web3uikit";
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
 
 export default function Pools () {
 
     const nalaRouterAddress = contractAddresses.nalaRouterContract;
     const nlaTokenAddress = contractAddresses.nalaTokenAddress;
     const wBNBTokenAddress = "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c";
+    const pancakeFactoryV2Address = "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73";
+    const BUSDTokenAddress = "0xe9e7cea3dedca5984780bafc599bd69add087d56";
 
     const [liquidity, setLiquidity] = useState(0);
+    const [amountToAddWBNB, setAmountToAddWBNB] = useState(0);
+    const [amountToAddNLA, setAmountToAddNLA] = useState(0);
+    const [amountToRemove, setAmountToRemove] = useState(0);
+    const [reserveWBNB, setReserveWBNB] = useState(0);
+    const [reserveNLA, setReserveNLA] = useState(0);
+    const [poolLiquidity, setPoolLiquidity] = useState(0);
+    const [tokenImported, setTokenImported] = useState(false);
+    const [lpTokenBalance, setLPTokenBalance] = useState(0);
 
-    const erc20ABI = [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"owner","type":"address"},{"indexed":true,"internalType":"address","name":"spender","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Approval","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"address","name":"userAddress","type":"address"},{"indexed":false,"internalType":"address payable","name":"relayerAddress","type":"address"},{"indexed":false,"internalType":"bytes","name":"functionSignature","type":"bytes"}],"name":"MetaTransactionExecuted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"previousAdminRole","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"newAdminRole","type":"bytes32"}],"name":"RoleAdminChanged","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleGranted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"role","type":"bytes32"},{"indexed":true,"internalType":"address","name":"account","type":"address"},{"indexed":true,"internalType":"address","name":"sender","type":"address"}],"name":"RoleRevoked","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"to","type":"address"},{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Transfer","type":"event"},{"inputs":[],"name":"CHILD_CHAIN_ID","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"CHILD_CHAIN_ID_BYTES","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEFAULT_ADMIN_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"DEPOSITOR_ROLE","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ERC712_VERSION","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ROOT_CHAIN_ID","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"ROOT_CHAIN_ID_BYTES","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"owner","type":"address"},{"internalType":"address","name":"spender","type":"address"}],"name":"allowance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"approve","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"decimals","outputs":[{"internalType":"uint8","name":"","type":"uint8"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"subtractedValue","type":"uint256"}],"name":"decreaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"},{"internalType":"bytes","name":"depositData","type":"bytes"}],"name":"deposit","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"userAddress","type":"address"},{"internalType":"bytes","name":"functionSignature","type":"bytes"},{"internalType":"bytes32","name":"sigR","type":"bytes32"},{"internalType":"bytes32","name":"sigS","type":"bytes32"},{"internalType":"uint8","name":"sigV","type":"uint8"}],"name":"executeMetaTransaction","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"getChainId","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"getDomainSeperator","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"user","type":"address"}],"name":"getNonce","outputs":[{"internalType":"uint256","name":"nonce","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleAdmin","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"uint256","name":"index","type":"uint256"}],"name":"getRoleMember","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"}],"name":"getRoleMemberCount","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"grantRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"hasRole","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"spender","type":"address"},{"internalType":"uint256","name":"addedValue","type":"uint256"}],"name":"increaseAllowance","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"name_","type":"string"},{"internalType":"string","name":"symbol_","type":"string"},{"internalType":"uint8","name":"decimals_","type":"uint8"},{"internalType":"address","name":"childChainManager","type":"address"}],"name":"initialize","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"name","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"renounceRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"role","type":"bytes32"},{"internalType":"address","name":"account","type":"address"}],"name":"revokeRole","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"symbol","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"totalSupply","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"sender","type":"address"},{"internalType":"address","name":"recipient","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"transferFrom","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"}],"name":"withdraw","outputs":[],"stateMutability":"nonpayable","type":"function"}]
-  
     useEffect(() => {
+        // const timer = setInterval(async () => {
+        //     getLPTokenBalance();
+        //     getReserves();
+        //   }, 1000);
+        // return () => clearInterval(timer);
+        getLPTokenBalance();
+        getReserves();
     },[])
    
-    const addLiquidityETH = async (amountOfBNB) => {
+    const addLiquidityETH = async () => {
         if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const nalaToken = new ethers.Contract(nlaTokenAddress, nalaTokenABI, signer);
+                const nalaRouter = new ethers.Contract(nalaRouterAddress, nalaRouterABI, signer);
+            
+                await nalaToken.connect(signer).approve(nalaRouterAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
+                // const factory = await nalaRouter.factory();
+                // console.log(factory);
+                await nalaRouter.connect(signer).addLiquidityETH(
+                    nlaTokenAddress, 
+                    ethers.utils.parseEther(amountToAddNLA.toString()),
+                    0, 
+                    0, // amountETHMin
+                    {value: ethers.utils.parseEther(amountToAddWBNB.toString())}
+                );
+
+            }
+        }
+    }
+
+    const removeLiquidityETH = async (amountOfBNB) => {
+       
+    }
+
+    const setAmountsWBNB = async (amountOfBNB) => {
+        if(amountOfBNB === "") {
+            setAmountToAddNLA("");
+            setAmountToAddWBNB("");
+        }
+        if(parseInt(amountOfBNB) === 0) {
+            setAmountToAddNLA(0);
+            setAmountToAddWBNB(0);
+        }
+        else if (typeof window.ethereum !== 'undefined') {
             const provider = new ethers.providers.Web3Provider(window.ethereum)
             const signer = provider.getSigner();
             if (signer) {
@@ -35,53 +89,179 @@ export default function Pools () {
                     [wBNBTokenAddress, nlaTokenAddress]
                 )
                 console.log(`Amounts out = ${amountsOut[1] / Math.pow(10, 18)}`);
-            
-                await nalaToken.connect(signer).approve(nalaRouterAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-                await nalaRouter.connect(signer).addLiquidityETH(
-                    nlaTokenAddress, 
-                    amountsOut[1], 
-                    amountsOut[1], 
-                    1, // amountETHMin
-                    {value: ethers.utils.parseEther(amountOfBNB.toString())}
-                );
+                
+                setAmountToAddWBNB(amountOfBNB);
+                setAmountToAddNLA(amountsOut[1] / Math.pow(10, 18));
+            }
+        }
+    }
+
+    const setAmountsNLA = async (amountOfNLA) => {
+        console.log(amountOfNLA);
+        if(amountOfNLA === "") {
+            setAmountToAddNLA("");
+            setAmountToAddWBNB("");
+        }
+        if(parseInt(amountOfNLA) === 0) {
+            setAmountToAddNLA(0);
+            setAmountToAddWBNB(0);
+        }
+        else if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const nalaToken = new ethers.Contract(nlaTokenAddress, nalaTokenABI, signer);
+                const nalaRouter = new ethers.Contract(nalaRouterAddress, nalaRouterABI, signer);
+
+                const amountsOut = await nalaRouter
+                .getAmountsOutTokens(
+                    ethers.utils.parseEther(amountOfNLA.toString()), 
+                    [nlaTokenAddress, wBNBTokenAddress]
+                )
+                console.log(`Amounts out = ${amountsOut[1] / Math.pow(10, 18)}`);
+                
+                setAmountToAddWBNB(amountsOut[1] / Math.pow(10, 18));
+                setAmountToAddNLA(amountOfNLA);
+            }
+        }
+    }
+
+    const findLPTokenAddress = async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const pancakeFactory = new ethers.Contract(pancakeFactoryV2Address, pancakeFactoryABI, signer);
+                const lpTokenAddress = await pancakeFactory.getPair(wBNBTokenAddress, nlaTokenAddress);
+                console.log("LP Token address => ", lpTokenAddress);
+                return lpTokenAddress;
+            }
+        }
+    }
+
+    const importTokenToMetamask = async () => {
+        findLPTokenAddress();
+        try {
+          const wasAdded = await window.ethereum.request({
+            method: 'wallet_watchAsset',
+            params: {
+              type: 'ERC20', 
+              options: {
+                address: await findLPTokenAddress(), 
+                symbol: "WBNB-NLA LP", 
+                decimals: 18, 
+                image: "https://png.pngitem.com/pimgs/s/121-1211195_head-small-to-medium-sized-cats-whiskers-cat.png", 
+              },
+            },
+          });
+          if (wasAdded) {
+            setTokenImported(true);
+            console.log('Thanks for your interest!');
+          } else {
+            setTokenImported(false);
+            console.log('NLA LP Token has not been added');
+          }
+        } catch (error) {
+          console.log(error);
+        }
+    }
+
+    const getLPTokenBalance = async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const pancakeFactory = new ethers.Contract(pancakeFactoryV2Address, pancakeFactoryABI, signer);
+                const lpTokenAddress = await pancakeFactory.getPair(wBNBTokenAddress, nlaTokenAddress);
+                const lpTokenContract = new ethers.Contract(lpTokenAddress, lpTokenABI, signer);
+                const balance = await lpTokenContract.balanceOf(signer.getAddress());
+                console.log("LP BALANCE", balance / Math.pow(10, 18));
+                setLPTokenBalance(balance)
+            }
+        }
+    }
+
+    const getReserves = async () => {
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner();
+            if (signer) {
+                const pancakeFactory = new ethers.Contract(pancakeFactoryV2Address, pancakeFactoryABI, signer);
+                const lpTokenAddress = await pancakeFactory.getPair(wBNBTokenAddress, nlaTokenAddress);
+                const lpTokenContract = new ethers.Contract(lpTokenAddress, lpTokenABI, signer);
+                const reserves = await lpTokenContract.getReserves();
+                setReserveWBNB(reserves[0]);
+                setReserveNLA(reserves[1])
+                getTokenPriceInBUSD(reserves[0], reserves[1])
+            }
+        }
+    }
+
+    const getTokenPriceInBUSD = async (wbnbReserve, nlaReserve) => {
+        if (typeof window.ethereum !== 'undefined') {
+            const provider = new ethers.providers.Web3Provider(window.ethereum)
+            const signer = provider.getSigner()
+            if (signer) {
+                const nalaRouter = new ethers.Contract(nalaRouterAddress, nalaRouterABI, signer);
+                const amountsOut = await nalaRouter
+                .getAmountsOutTokens(
+                    ethers.utils.parseEther("1"), 
+                    [wBNBTokenAddress, nlaTokenAddress]
+                )
+
+                const amoutOfNLAFor1BNB = amountsOut[1] / Math.pow(10, 18);
+                const nlaPriceInBNB = 1 / amoutOfNLAFor1BNB;
+
+                // console.log(`NLA price in BNB = ${nlaPriceInBNB}`);
+
+                const bnbPriceInBUSD = await nalaRouter
+                .getAmountsOutTokens(
+                    ethers.utils.parseEther("1"), 
+                    [wBNBTokenAddress, BUSDTokenAddress]
+                )
+
+                // console.log("bnbPriceInBUSD", bnbPriceInBUSD[1] / Math.pow(10, 18));
+
+                const nlaPriceInBUSD = (bnbPriceInBUSD[1] / Math.pow(10, 18)) * nlaPriceInBNB;
+                // console.log("nlaPriceInBUSD", nlaPriceInBUSD);
+
+                const wbnbValueInBUSD = (bnbPriceInBUSD[1] / Math.pow(10, 18)) * (wbnbReserve / Math.pow(10, 18));
+                const nlaValueInBUSD = (nlaPriceInBUSD) * (nlaReserve / Math.pow(10, 18));
+
+                // console.log("wbnbValueInBUSD", wbnbValueInBUSD);
+                // console.log("nlaValueInBUSD", nlaValueInBUSD);
+
+                setPoolLiquidity(wbnbValueInBUSD + nlaValueInBUSD);
 
             }
         }
     }
 
-    // const addLiquidity = async (token1, token2, token1Amount, token2Amount) => {
-    //     if (typeof window.ethereum !== 'undefined') {
-    //         const provider = new ethers.providers.Web3Provider(window.ethereum)
-    //         const signer = provider.getSigner();
-    //         if (signer) {
-    //             const nalaRouterContract = new ethers.Contract(nalaRouterAddress, NalaRouterABI, signer);
-
-    //             const token1 = new ethers.Contract(token1.address, erc20ABI, signer);
-    //             const token2 = new ethers.Contract(token2.address, erc20ABI, signer);
-
-    //             token1.connect(signer).approve(nalaRouterAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    //             token2.connect(signer).approve(nalaRouterAddress, "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
-    //             nalaRouterContract.connect(signer).addLiquidityETH(nlaTokenAddress, amountTokenDesired, 0, 0, {value: ethers.utils.parseEther("1")});
-
-    //         }
-    //     }
-    // }
-
     return (
         <>
-            <div style={{ display: 'grid', gap: '20px', padding: '40px 20px' }}>
+            <div style={{ display: 'grid', gap: '20px', padding: '40px 20px', width:"500px" }}>
                 <section style={{ display: 'flex', gap: '20px' }}>
-                    <Widget info="WBNB - NLA" title="Pool" />
-                    <Widget info="233,182" title="Total liquidity in $" />
+                    <Widget info="WBNB - NLA" title="Pool tokens" />
+                    <Widget info={(lpTokenBalance / Math.pow(10, 18)).toFixed(6)} title="Your LP Balance" />
                 </section>
                 <section style={{ display: 'flex', gap: '20px' }}>
-                    <Widget info="72%" title="APR" />
-                    <Widget info="232" title="Stakers" />
-                    <Widget info="213" title="Rewards per day" />
-                    <Widget info="5002300" title="Rewards per year" />
+                    {/* <Widget info={(reserveWBNB / Math.pow(10, 18)).toFixed(2)} title="WBNB Reserve" />
+                    <Widget info={(reserveNLA / Math.pow(10, 18)).toFixed(2)} title="NLA Reserve" /> */
+                    <Widget info={`${poolLiquidity.toFixed(3)} $`} title="Total liquidity value in $" />
+                    }
                 </section>
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+                    <Button style={{marginRight: "25%"}} color="secondary" variant="contained" key="Deposit" onClick={() => addLiquidityETH()}>Add liquidity</Button>
+                    <Button color="secondary" variant="contained" key="Withdraw" onClick={() => removeLiquidityETH()}>Remove liquidity</Button>
+                </div>
+                <TextField value={amountToAddWBNB} id="outlined-basic" label="Amount of WBNB..." variant="outlined" size="small" type="number" onChange={(e) => setAmountsWBNB(e.target.value)}/>
+                <TextField value={amountToAddNLA} id="outlined-basic" label="Amount of NLA..." variant="outlined" size="small" type="number" onChange={(e) => setAmountsNLA(e.target.value)}/>
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+                    {tokenImported ?
+                    <Button disabled={true} color="info" variant="contained" key="Deposit">Token imported</Button> 
+                    : <Button color="info" variant="contained" key="Deposit" onClick={() => importTokenToMetamask()}>Import LP Token to metamask</Button>}
+                </div>
             </div>
-            <button onClick={() => addLiquidityETH(100)}>Add liquidity</button>
         </>
     )
 }

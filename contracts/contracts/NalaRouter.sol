@@ -156,6 +156,8 @@ contract NalaRouter {
         path[1] = tokenOut;
         IERC20(pancakeRouter.WETH()).approve(address(pancakeRouter), msg.value); 
         pancakeRouter.swapExactETHForTokens{value: msg.value}(amountOutMin, path, msg.sender, block.timestamp + 60*10);
+        uint256[] memory response = pancakeRouter.getAmountsOut(msg.value, path);
+        console.log(response[1]);
         emit Transfer(msg.sender, address(this), amountOutMin);
     }
 
@@ -244,6 +246,10 @@ contract NalaRouter {
 
     function getAmountsOutTokens(uint amountIn, address[] calldata path) external view returns (uint[] memory amounts) {
         return pancakeRouter.getAmountsOut(amountIn, path);
+    }
+
+    function getFactoryAddress() public returns (address factory){
+        return pancakeRouter.factory();
     }
 
     receive() external payable {}

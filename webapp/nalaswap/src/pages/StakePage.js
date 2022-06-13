@@ -12,6 +12,9 @@ import TextField from '@mui/material/TextField';
 import contractAddresses from "../utils/contractsAddresses.json";
 import {BigNumber as JsBigNumber} from 'bignumber.js'
 import {Widget} from "web3uikit";
+import Switch from '@mui/material/Switch';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 export default function StakePage () {
 
@@ -24,6 +27,7 @@ export default function StakePage () {
     const [amount, setAmount] = useState(0);
     const [rewardsPerDay, setRewardsPerDay] = useState(0);
     const [errorMessage, setErrorMessage] = useState("");
+    const [autocompound, setAutoCompound] = useState(false);
 
     const contractAddress = contractAddresses.stakingContract;
     const nlaTokenAddress = contractAddresses.nalaTokenAddress;
@@ -34,6 +38,16 @@ export default function StakePage () {
     const TOKENS_PER_BLOCK = 1;
 
     useEffect(() => {
+        //  const timer = setInterval(async () => {
+        //     getUserStakedAmount();
+        //     getRewardsPerDay();
+        //     getTVL();
+        //     getActiveStakers();
+        //     getTokenPriceInBUSD();
+        //     getUserBalanceWithRewards();
+        //     getAPR(TOKENS_PER_BLOCK); // get staked amout without using async await inside useEffect
+        //   }, 1000);
+        // return () => clearInterval(timer);
         getUserStakedAmount();
         getRewardsPerDay();
         getTVL();
@@ -254,6 +268,18 @@ export default function StakePage () {
     return (
         <>
             <div style={{ display: 'grid', gap: '20px', padding: '40px 20px', width: "530px" }}>
+                <FormGroup>
+                    <FormControlLabel
+                    control={
+                        <Switch
+                            checked={autocompound}
+                            onChange={() => {setAutoCompound(!autocompound)}}
+                            inputProps={{ 'aria-label': 'controlled' }}
+                        />
+                    }
+                    label={autocompound ? "Autocompound on" : "Autocompound off"}
+                    />
+                </FormGroup>
                 <section style={{ display: 'flex', gap: '20px' }}>
                     <Widget info={`${rewardsPerDay.toFixed(2)} NLA`} title="Rewards per day"/>
                     <Widget info={`${TVL.toFixed(2)} NLA`} title="Total NLA staked" />
@@ -261,14 +287,17 @@ export default function StakePage () {
                 <section style={{ display: 'flex', gap: '20px' }}>
                     <Widget info={`${apr.toFixed(2)}%`} title="APR" />
                     <Widget info={parseInt(activeStakers)} title="Active stakers" />
-                    <Widget info={`${tokenPriceInBUSD.toFixed(2)}$`} title="NLA Price in BUSD" />
+                    <Widget info={`${tokenPriceInBUSD.toFixed(2)}$`} title="NLA Price in $" />
                 </section>
                 <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
-                    <Button style={{marginRight: "25%"}} color="secondary" variant="contained" key="Deposit" onClick={() => stakeTokens(amount)}>Deposit</Button>
+                    <Button style={{marginRight: "25%"}} color="secondary" variant="contained" key="Deposit" onClick={() => stakeTokens(amount)}>Stake</Button>
                     <Button color="secondary" variant="contained" key="Withdraw" onClick={() => withdrawTokens(amount)}>Withdraw</Button>
                 </div>
                 <TextField id="outlined-basic" label="Amount..." variant="outlined" size="small" type="number" onChange={(e) => setAmount(e.target.value)}/>
                 <small style={{color: "red"}}>{errorMessage}</small>
+                <div style={{display: 'flex', flexDirection: 'row', justifyContent: 'space-around'}}>
+                    <Button color="success" variant="contained" key="Withdraw" onClick={() => withdrawTokens(amount)}>Claim rewards</Button>
+                </div>
             </div>
         </>
     )

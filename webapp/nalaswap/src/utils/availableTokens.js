@@ -7,4 +7,5 @@ export const tokens = [
     { label: 'UNI', address: "0xbf5140a22578168fd562dccf235e5d43a02ce9b1", image:"https://s2.coinmarketcap.com/static/img/coins/200x200/7083.png" },
     { label: 'CAKE', address: "0x0e09fabb73bd3ade0a17ecc321fd13a19e81ce82", image:"https://s2.coinmarketcap.com/static/img/coins/200x200/7186.png" },
     { label: 'NLA', address: contractAddresses.nalaTokenAddress, image:"https://png.pngitem.com/pimgs/s/121-1211195_head-small-to-medium-sized-cats-whiskers-cat.png" },
+    { label: 'BUSD', address: "0xe9e7cea3dedca5984780bafc599bd69add087d56", image: "https://cdn.coinranking.com/6SJHRfClq/busd.svg?size=48x48" }
 ];

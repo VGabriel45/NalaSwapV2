@@ -6,8 +6,8 @@ const nalaRouterABI = require("./ABIS/NalaRouter.json")
 async function main() {
     const signer = await ethers.getSigner("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
     const pancakeRouterAddress: string = "0x10ED43C718714eb63d5aA57B78B54704E256024E";
-    const nalaTokenAdress: string = "0xc351De5746211E2B7688D7650A8bF7D91C809c0D";
-    const nalaRouterAddress: string = "0x5895dAbE895b0243B345CF30df9d7070F478C47F";
+    const nalaTokenAdress: string = "0xc31df591ad41Bf35cac578822580Cf6188ae7fCE";
+    const nalaRouterAddress: string = "0x8DDF02B5bF6203af017b39D99870743446CE4D8b";
 
     const nalaToken = new ethers.Contract(nalaTokenAdress, nalaTokenABI, signer);
     const nalaRouter = new ethers.Contract(nalaRouterAddress, nalaRouterABI, signer);
